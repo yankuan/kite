@@ -69,47 +69,14 @@ class App
             $config = self::initCommon();
             $request->filter($config['default_filter']);
             // 获取应用调度信息
-            $dispatch = self::$dispatch;
-            if (empty($dispatch)) {
-                // 进行URL路由检测
-                $dispatch = self::routeCheck($request, $config);
-            }
+            $dispatch = self::routeCheck($request, $config);
             // 记录当前调度信息
             $request->dispatch($dispatch);
-            // 请求缓存检查
-            $request->cache($config['request_cache'], $config['request_cache_expire']);
-
-            switch ($dispatch['type']) {
-                case 'redirect':
-                    // 执行重定向跳转
-                    $data = Response::create($dispatch['url'], 'redirect')->code($dispatch['status']);
-                    break;
-                case 'module':
-                    // 模块/控制器/操作
-                    $data = self::module($dispatch['module'], $config, isset($dispatch['convert']) ? $dispatch['convert'] : null);
-                    break;
-                case 'controller':
-                    // 执行控制器操作
-                    $data = Loader::action($dispatch['controller']);
-                    break;
-                case 'method':
-                    // 执行回调方法
-                    $data = self::invokeMethod($dispatch['method']);
-                    break;
-                case 'function':
-                    // 执行闭包
-                    $data = self::invokeFunction($dispatch['function']);
-                    break;
-                case 'response':
-                    $data = $dispatch['response'];
-                    break;
-                default:
-                    throw new \InvalidArgumentException('dispatch type not support');
-            }
+            $data = self::module($dispatch['module'], $config, isset($dispatch['convert']) ? $dispatch['convert'] : null);
+             
         } catch (HttpResponseException $exception) {
             $data = $exception->getResponse();
         }
-
         // 清空类的实例化
         Loader::clearInstance();
 
@@ -138,21 +105,6 @@ class App
     {
         self::$dispatch = ['type' => $type, $type => $dispatch];
     }
-
-    /**
-     * 执行函数或者闭包方法 支持参数调用
-     * @access public
-     * @param string|array|\Closure $function 函数或者闭包
-     * @param array                 $vars     变量
-     * @return mixed
-     */
-    public static function invokeFunction($function, $vars = [])
-    {
-        $reflect = new \ReflectionFunction($function);
-        $args    = self::bindParams($reflect, $vars);
-        return $reflect->invokeArgs($args);
-    }
-
     /**
      * 调用反射执行类的方法 支持参数绑定
      * @access public
@@ -266,21 +218,10 @@ class App
         if ($config['app_multi_module']) {
             // 多模块部署
             $module    = strip_tags(strtolower($result[0] ?: $config['default_module']));
-            $bind      = Route::getBind('module');
             $available = false;
-            if ($bind) {
-                // 绑定模块
-                list($bindModule) = explode('/', $bind);
-                if (empty($result[0])) {
-                    $module    = $bindModule;
-                    $available = true;
-                } elseif ($module == $bindModule) {
-                    $available = true;
-                }
-            } elseif (!in_array($module, $config['deny_module_list']) && is_dir(APP_PATH . $module)) {
+            if (!in_array($module, $config['deny_module_list']) && is_dir(APP_PATH . $module)) {
                 $available = true;
             }
-
             // 模块初始化
             if ($module && $available) {
                 // 初始化模块
@@ -314,19 +255,17 @@ class App
             throw new HttpException(404, 'controller not exists:' . Loader::parseName($controller, 1));
         }
         // 获取当前操作名
-        $action = $actionName . $config['action_suffix'];
-
         $vars = [];
-        if (is_callable([$instance, $action])) {
+        if (is_callable([$instance, $actionName])) {
             // 执行操作方法
-            $call = [$instance, $action];
+            $call = [$instance, $actionName];
         } elseif (is_callable([$instance, '_empty'])) {
             // 空操作
             $call = [$instance, '_empty'];
-            $vars = [$action];
+            $vars = [$actionName];
         } else {
             // 操作不存在
-            throw new HttpException(404, 'method not exists:' . get_class($instance) . '->' . $action . '()');
+            throw new HttpException(404, 'method not exists:' . get_class($instance) . '->' . $actionName . '()');
         }
         return self::invokeMethod($call, $vars);
     }
