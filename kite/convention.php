@@ -60,8 +60,6 @@ return [
     'empty_controller'       => 'Error',
     // 操作方法前缀
     'use_action_prefix'      => false,
-    // 操作方法后缀
-    'action_suffix'          => '',
     // 自动搜索控制器
     'controller_auto_search' => false,
 
@@ -103,10 +101,6 @@ return [
     'var_ajax'               => '_ajax',
     // 表单pjax伪装变量
     'var_pjax'               => '_pjax',
-    // 是否开启请求缓存 true自动缓存 支持设置请求缓存规则
-    'request_cache'          => false,
-    // 请求缓存有效期
-    'request_cache_expire'   => null,
 
     // +----------------------------------------------------------------------
     // | 模板设置
