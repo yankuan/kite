@@ -3,15 +3,7 @@ namespace core;
 
 use core\Cache;
 use core\Config;
-use core\Debug;
-use core\Env;
 use core\Request;
-use core\response\Json as JsonResponse;
-use core\response\Jsonp as JsonpResponse;
-use core\response\Redirect as RedirectResponse;
-use core\response\View as ViewResponse;
-use core\response\Xml as XmlResponse;
-
 class Response
 {
 
@@ -57,23 +49,13 @@ class Response
      * 创建Response对象
      * @access public
      * @param mixed  $data    输出数据
-     * @param string $type    输出类型
      * @param int    $code
      * @param array  $header
      * @param array  $options 输出参数
-     * @return Response|JsonResponse|ViewResponse|XmlResponse|RedirectResponse|JsonpResponse
      */
-    public static function create($data = '', $type = '', $code = 200, array $header = [], $options = [])
+    public static function create($data = '', $code = 200, array $header = [], $options = [])
     {
-        $type = empty($type) ? 'null' : strtolower($type);
-
-        $class = false !== strpos($type, '\\') ? $type : '\\core\\response\\' . ucfirst($type);
-        if (class_exists($class)) {
-            $response = new $class($data, $code, $header, $options);
-        } else {
-            $response = new static($data, $code, $header, $options);
-        }
-
+        $response = new static($data, $code, $header, $options);
         return $response;
     }
 
