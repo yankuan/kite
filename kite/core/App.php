@@ -84,10 +84,7 @@ class App
         if ($data instanceof Response) {
             $response = $data;
         } elseif (!is_null($data)) {
-            // 默认自动识别响应输出类型
-            $isAjax   = $request->isAjax();
-            $type     = $isAjax ? Config::get('default_ajax_return') : Config::get('default_return_type');
-            $response = Response::create($data, $type);
+            $response = Response::create($data);
         } else {
             $response = Response::create();
         }
@@ -371,7 +368,6 @@ class App
                     }
                 }
             }
-
             // 路由检测（根据路由定义返回不同的URL调度）
             $result = Route::check($request, $path, $depr, $config['url_domain_deploy']);
             $must   = !is_null(self::$routeMust) ? self::$routeMust : $config['url_route_must'];
