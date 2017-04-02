@@ -276,17 +276,12 @@ class App
             // 初始化应用
             $config       = self::init();
             self::$suffix = $config['class_suffix'];
-            if (!self::$debug) {
-                ini_set('display_errors', 'Off');
-            } elseif (!IS_CLI) {
-                //重新申请一块比较大的buffer
-                if (ob_get_level() > 0) {
-                    $output = ob_get_clean();
-                }
-                ob_start();
-                if (!empty($output)) {
-                    echo $output;
-                }
+            if (ob_get_level() > 0) {
+                $output = ob_get_clean();
+            }
+            ob_start();
+            if (!empty($output)) {
+                echo $output;
             }
             // 加载额外文件
             if (!empty($config['extra_file_list'])) {
