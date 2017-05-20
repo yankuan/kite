@@ -1,14 +1,4 @@
 <?php
-// +----------------------------------------------------------------------
-// | ThinkPHP [ WE CAN DO IT JUST THINK ]
-// +----------------------------------------------------------------------
-// | Copyright (c) 2006~2016 http://serverphp.cn All rights reserved.
-// +----------------------------------------------------------------------
-// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
-// +----------------------------------------------------------------------
-// | Author: liu21st <liu21st@gmail.com>
-// +----------------------------------------------------------------------
-
 namespace server;
 
 use server\exception\ClassNotFoundException;
@@ -35,8 +25,6 @@ class Log
 
     // 日志信息
     protected static $log = [];
-    // 配置参数
-    protected static $config = [];
     // 日志类型
     protected static $type = ['log', 'error', 'info', 'sql', 'notice', 'alert'];
     // 日志写入驱动
@@ -51,18 +39,10 @@ class Log
      */
     public static function init()
     {
-        $type         = isset($config['type']) ? $config['type'] : 'File';
-        $class        = false !== strpos($type, '\\') ? $type : '\\server\\log\\' . ucwords($type);
-        $config = array();
-        self::$config = $config;
-        unset($config['type']);
-        if (class_exists($class)) {
-            self::$driver = new $class($config);
-        } else {
-            throw new ClassNotFoundException('class not exists:' . $class, $class);
-        }
+        $class        = '\\server\\log\\File';
+        self::$driver = new $class();
         // 记录初始化信息
-        APP_DEBUG && Log::record('[ LOG ] INIT ' . $type . ': ' . var_export($config, true), 'info');
+        APP_DEBUG && Log::record('[ LOG ] INIT ' . $type , 'info');
     }
 
     /**
